@@ -5,30 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
-    html, body {
+    body {
       margin: 0;
       padding: 0;
       background: transparent;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .globe-wrapper {
+      width: 100%;
+      max-width: 400px;
       text-align: center;
     }
 
-    .globe-container {
-      width: 100%;
-      max-width: 400px;   /* smaller = more reliable */
-      margin: 40px auto;
+    /* This is the key: fixed render box */
+    .globe-box {
+      width: 300px;
+      height: 300px;
+      margin: 0 auto;
     }
 
-    /* Let ClustrMaps control its internal canvas */
-    .globe-container div,
-    .globe-container canvas {
-      max-width: 100%;
-      height: auto !important;
-    }
-
-    @media (max-width: 600px) {
-      .globe-container {
-        max-width: 300px;
-        margin: 20px auto;
+    /* Scale container on smaller screens */
+    @media (max-width: 500px) {
+      .globe-box {
+        width: 240px;
+        height: 240px;
       }
     }
   </style>
@@ -36,10 +39,12 @@
 
 <body>
 
-<div class="globe-container">
-  <script type="text/javascript" id="clstr_globe"
-  src="https://clustrmaps.com/globe.js?d=X_B5WWqjV6VzVp1Vr7M6v8GWxWmSrAoP8KTaMdRXXkk">
-  </script>
+<div class="globe-wrapper">
+  <div class="globe-box">
+    <script type="text/javascript" id="clstr_globe"
+    src="https://clustrmaps.com/globe.js?d=X_B5WWqjV6VzVp1Vr7M6v8GWxWmSrAoP8KTaMdRXXkk">
+    </script>
+  </div>
 </div>
 
 </body>
