@@ -1,103 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Live Visitors Globe • iamkoine</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden;
-            background: #0b0f1a;
-        }
-        #globe {
-            width: 100%;
-            height: 100%;
-        }
-        #title {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            color: #ddd;
-            font-family: system-ui, Arial, sans-serif;
-            font-size: 18px;
-            z-index: 10;
-            pointer-events: none;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
-        }
-        #loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #777;
-            font-family: system-ui, Arial, sans-serif;
-            font-size: 16px;
-            z-index: 10;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Globe</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #000; font-family: Arial, sans-serif; }
+    canvas { display: block; }
+    #info {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: white;
+      background: rgba(0,0,0,0.5);
+      padding: 10px;
+      border-radius: 8px;
+      pointer-events: none;
+    }
+  </style>
 </head>
 <body>
+  <div id="info">Drag to rotate • Scroll to zoom</div>
 
-<div id="title">🌍 Live Visitors Globe • iamkoine</div>
-<div id="loading">Loading spinning globe...</div>
-<div id="globe"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
 
-<script type="module">
-    import Globe from 'https://cdn.jsdelivr.net/npm/globe.gl@2.45.3';
+  <script>
+    // Scene setup
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    document.body.appendChild(renderer.domElement);
 
-    const globeEl = document.getElementById('globe');
-    const loadingEl = document.getElementById('loading');
+    // Orbit controls (drag to rotate, scroll to zoom)
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.minDistance = 1.5;
+    controls.maxDistance = 10;
 
-    const world = Globe()(globeEl)
-        .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-        .backgroundColor('#0b0f1a')
-        .atmosphereColor('#4a90e2')
-        .atmosphereAltitude(0.2)
-        .pointAltitude(0.01)
-        .pointRadius(0.5)
-        .pointColor(() => '#ff3366');
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(5, 3, 5);
+    scene.add(directionalLight);
 
-    // Spinning globe (continuous gentle rotation)
-    world.controls().autoRotate = true;
-    world.controls().autoRotateSpeed = 0.35;
+    // Earth globe
+    const geometry = new THREE.SphereGeometry(1, 64, 64);
+    const textureLoader = new THREE.TextureLoader();
 
-    // Responsive for all screen sizes + Google Sites iframe
-    function resize() {
-        world.width(window.innerWidth);
-        world.height(window.innerHeight);
+    // Use public domain Earth textures (you can replace with your own)
+    const earthTexture = textureLoader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');
+    const bumpTexture = textureLoader.load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg');
+    const specularTexture = textureLoader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg');
+
+    const material = new THREE.MeshPhongMaterial({
+      map: earthTexture,
+      bumpMap: bumpTexture,
+      bumpScale: 0.05,
+      specularMap: specularTexture,
+      specular: new THREE.Color(0x333333),
+      shininess: 5
+    });
+
+    const earth = new THREE.Mesh(geometry, material);
+    scene.add(earth);
+
+    // Optional: simple atmosphere glow
+    const atmosphereGeometry = new THREE.SphereGeometry(1.02, 64, 64);
+    const atmosphereMaterial = new THREE.MeshBasicMaterial({
+      color: 0x88ccff,
+      transparent: true,
+      opacity: 0.15,
+      blending: THREE.AdditiveBlending,
+      side: THREE.BackSide
+    });
+    const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+    scene.add(atmosphere);
+
+    // Camera position
+    camera.position.z = 3;
+
+    // Animation loop
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      earth.rotation.y += 0.0005; // very slow auto-rotation
+      renderer.render(scene, camera);
     }
-    window.addEventListener('resize', resize);
-    resize();
+    animate();
 
-    // Hide loading text
-    setTimeout(() => {
-        loadingEl.style.display = 'none';
-    }, 1500);
-
-    // Show users from all over the world (glowing dots)
-    let visitors = [];
-
-    function addRandomVisitor() {
-        const lat = (Math.random() * 150) - 75;
-        const lng = Math.random() * 360 - 180;
-        visitors.push({ lat, lng });
-        if (visitors.length > 120) visitors.shift();
-        world.pointsData(visitors);
-    }
-
-    // Initial visitors
-    for (let i = 0; i < 35; i++) {
-        addRandomVisitor();
-    }
-
-    // New visitors appear over time (live traffic feel)
-    setInterval(() => {
-        if (Math.random() > 0.25) addRandomVisitor();
-    }, 1800);
-</script>
-
+    // Responsive resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
 </body>
 </html>
