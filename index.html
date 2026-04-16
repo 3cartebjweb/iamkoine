@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Globe</title>
+    <title>Live Visitor Globe - iamkoine</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         html, body {
@@ -16,39 +16,76 @@
             width: 100%;
             height: 100%;
         }
+        #title {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            color: #ddd;
+            font-family: system-ui, Arial, sans-serif;
+            font-size: 18px;
+            font-weight: 500;
+            z-index: 10;
+            pointer-events: none;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+        }
     </style>
 </head>
 <body>
 
+<div id="title">Live Visitors • iamkoine</div>
 <div id="globe"></div>
 
 <script type="module">
     import Globe from 'https://cdn.jsdelivr.net/npm/globe.gl';
 
-    const el = document.getElementById('globe');
+    const globeEl = document.getElementById('globe');
 
-    // Create the globe
-    const world = Globe()(el)
+    const world = Globe()(globeEl)
         .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
         .backgroundColor('#0b0f1a')
-        .atmosphereColor('#ffffff')
-        .atmosphereAltitude(0.15);
+        .atmosphereColor('#4a90e2')
+        .atmosphereAltitude(0.2)
+        .pointAltitude(0.01)
+        .pointRadius(0.5)
+        .pointColor(() => '#ff3366');
 
-    // Optional: make it slowly rotate
+    // Auto rotation (similar to old ClustrMaps feel)
     world.controls().autoRotate = true;
-    world.controls().autoRotateSpeed = 0.3;
+    world.controls().autoRotateSpeed = 0.25;
 
-    // Handle window resize
+    // Responsive handling
     function resize() {
         world.width(window.innerWidth);
         world.height(window.innerHeight);
     }
 
     window.addEventListener('resize', resize);
-    resize();
+    resize();   // initial call
 
-    // Optional: add some points or arcs later if you want
-    // world.pointsData([...]);
+    // === Visitor dots (currently demo mode) ===
+    let visitors = [];
+
+    function addVisitor(lat, lng) {
+        visitors.push({ lat: lat, lng: lng });
+        if (visitors.length > 120) visitors.shift();   // keep it clean
+        world.pointsData(visitors);
+    }
+
+    // Add some initial visitors
+    for (let i = 0; i < 35; i++) {
+        const lat = (Math.random() - 0.5) * 140;
+        const lng = Math.random() * 360 - 180;
+        addVisitor(lat, lng);
+    }
+
+    // Simulate new visitors every ~2 seconds (feels live)
+    setInterval(() => {
+        if (Math.random() > 0.2) {   // ~80% chance
+            const lat = (Math.random() - 0.5) * 140;
+            const lng = Math.random() * 360 - 180;
+            addVisitor(lat, lng);
+        }
+    }, 2000);
 </script>
 
 </body>
