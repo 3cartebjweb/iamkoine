@@ -5,100 +5,80 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Interactive Globe</title>
   <style>
-    body { margin: 0; overflow: hidden; background: #000; font-family: Arial, sans-serif; }
-    canvas { display: block; }
-    #info {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      color: white;
-      background: rgba(0,0,0,0.5);
-      padding: 10px;
-      border-radius: 8px;
-      pointer-events: none;
+    body { 
+      margin: 0; 
+      overflow: hidden; 
+      background: #000; 
+    }
+    #globeViz { 
+      width: 100vw; 
+      height: 100vh; 
     }
   </style>
 </head>
 <body>
-  <div id="info">Drag to rotate • Scroll to zoom</div>
+  <div id="globeViz"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/globe.gl"></script>
 
   <script>
-    // Scene setup
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    document.body.appendChild(renderer.domElement);
+    const cities = [
+      { name: "Tokyo", lat: 35.6762, lng: 139.6503, size: 0.20, color: "#ffdd57" },
+      { name: "Delhi", lat: 28.6139, lng: 77.2090, size: 0.19, color: "#ff99cc" },
+      { name: "Shanghai", lat: 31.2304, lng: 121.4737, size: 0.19, color: "#ffdd57" },
+      { name: "São Paulo", lat: -23.5505, lng: -46.6333, size: 0.18, color: "#66ff99" },
+      { name: "Mexico City", lat: 19.4333, lng: -99.1333, size: 0.18, color: "#ffaa44" },
+      { name: "Cairo", lat: 30.0444, lng: 31.2357, size: 0.17, color: "#ffaa44" },
+      { name: "Mumbai", lat: 19.0760, lng: 72.8777, size: 0.17, color: "#ff99cc" },
+      { name: "Beijing", lat: 39.9042, lng: 116.4074, size: 0.18, color: "#ffdd57" },
+      { name: "New York", lat: 40.7128, lng: -74.0060, size: 0.17, color: "#ff6666" },
+      { name: "London", lat: 51.5074, lng: -0.1278, size: 0.15, color: "#99ccff" },
+      { name: "Istanbul", lat: 41.0082, lng: 28.9784, size: 0.16, color: "#ff6666" },
+      { name: "Moscow", lat: 55.7558, lng: 37.6173, size: 0.15, color: "#99ccff" },
+      { name: "Jakarta", lat: -6.2088, lng: 106.8456, size: 0.17, color: "#66ff99" },
+      { name: "Lagos", lat: 6.5244, lng: 3.3792, size: 0.15, color: "#ffaa44" },
+      { name: "Sydney", lat: -33.8688, lng: 151.2093, size: 0.13, color: "#66ff99" },
+      { name: "Los Angeles", lat: 34.0522, lng: -118.2437, size: 0.14, color: "#ff6666" },
+      { name: "Paris", lat: 48.8566, lng: 2.3522, size: 0.14, color: "#99ccff" },
+      { name: "Buenos Aires", lat: -34.6037, lng: -58.3816, size: 0.14, color: "#66ff99" },
+      { name: "Seoul", lat: 37.5665, lng: 126.9780, size: 0.16, color: "#ffdd57" },
+      { name: "Bangkok", lat: 13.7563, lng: 100.5018, size: 0.15, color: "#ffaa44" },
+      { name: "Singapore", lat: 1.3521, lng: 103.8198, size: 0.14, color: "#ffdd57" },
+      { name: "Hong Kong", lat: 22.3193, lng: 114.1694, size: 0.14, color: "#ffdd57" },
+      { name: "Dubai", lat: 25.2048, lng: 55.2708, size: 0.13, color: "#ffaa44" },
+      { name: "Johannesburg", lat: -26.2041, lng: 28.0473, size: 0.12, color: "#66ff99" },
+      { name: "Cape Town", lat: -33.9249, lng: 18.4241, size: 0.12, color: "#66ff99" }
+    ];
 
-    // Orbit controls (drag to rotate, scroll to zoom)
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.minDistance = 1.5;
-    controls.maxDistance = 10;
+    const globe = Globe({
+      rendererConfig: { antialias: true, alpha: true }
+    })(document.getElementById('globeViz'))
+      .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+      .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
+      .showAtmosphere(true)
+      .atmosphereColor('#a0d8ff')
+      .atmosphereAltitude(0.18)
+      .backgroundColor('#000000')
+      .pointOfView({ lat: 25, lng: 0, altitude: 2.5 }, 0);
 
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-    scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(5, 3, 5);
-    scene.add(directionalLight);
+    globe.controls().autoRotate = true;
+    globe.controls().autoRotateSpeed = 0.3;
 
-    // Earth globe
-    const geometry = new THREE.SphereGeometry(1, 64, 64);
-    const textureLoader = new THREE.TextureLoader();
+    globe.pointsData(cities)
+      .pointAltitude(0.01)
+      .pointColor(d => d.color)
+      .pointRadius(d => d.size)
+      .pointResolution(12);
 
-    // Use public domain Earth textures (you can replace with your own)
-    const earthTexture = textureLoader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');
-    const bumpTexture = textureLoader.load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg');
-    const specularTexture = textureLoader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg');
-
-    const material = new THREE.MeshPhongMaterial({
-      map: earthTexture,
-      bumpMap: bumpTexture,
-      bumpScale: 0.05,
-      specularMap: specularTexture,
-      specular: new THREE.Color(0x333333),
-      shininess: 5
-    });
-
-    const earth = new THREE.Mesh(geometry, material);
-    scene.add(earth);
-
-    // Optional: simple atmosphere glow
-    const atmosphereGeometry = new THREE.SphereGeometry(1.02, 64, 64);
-    const atmosphereMaterial = new THREE.MeshBasicMaterial({
-      color: 0x88ccff,
-      transparent: true,
-      opacity: 0.15,
-      blending: THREE.AdditiveBlending,
-      side: THREE.BackSide
-    });
-    const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
-    scene.add(atmosphere);
-
-    // Camera position
-    camera.position.z = 3;
-
-    // Animation loop
-    function animate() {
-      requestAnimationFrame(animate);
-      controls.update();
-      earth.rotation.y += 0.0005; // very slow auto-rotation
-      renderer.render(scene, camera);
-    }
-    animate();
-
-    // Responsive resize
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
+    globe.arcsData([
+      { startLat: 40.71, startLng: -74.01, endLat: 51.51, endLng: -0.13, color: '#ffff88' },
+      { startLat: 35.68, startLng: 139.77, endLat: -33.87, endLng: 151.21, color: '#88ffff' }
+    ])
+    .arcColor(d => d.color)
+    .arcDashLength(0.7)
+    .arcDashGap(0.3)
+    .arcDashAnimateTime(2500);
   </script>
 </body>
 </html>
