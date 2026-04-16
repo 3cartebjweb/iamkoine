@@ -7,31 +7,23 @@
   <style>
     body {
       margin: 0;
-      padding: 0;
-      background: transparent;
+      background: #0b0f1a;
+      overflow: hidden;
       display: flex;
       justify-content: center;
       align-items: center;
+      height: 100vh;
     }
 
-    .globe-wrapper {
+    #globe {
       width: 100%;
-      max-width: 400px;
-      text-align: center;
+      height: 100vh;
+      max-height: 600px;
     }
 
-    /* This is the key: fixed render box */
-    .globe-box {
-      width: 300px;
-      height: 300px;
-      margin: 0 auto;
-    }
-
-    /* Scale container on smaller screens */
-    @media (max-width: 500px) {
-      .globe-box {
-        width: 240px;
-        height: 240px;
+    @media (max-width: 600px) {
+      #globe {
+        max-height: 400px;
       }
     }
   </style>
@@ -39,13 +31,27 @@
 
 <body>
 
-<div class="globe-wrapper">
-  <div class="globe-box">
-    <script type="text/javascript" id="clstr_globe"
-    src="https://clustrmaps.com/globe.js?d=X_B5WWqjV6VzVp1Vr7M6v8GWxWmSrAoP8KTaMdRXXkk">
-    </script>
-  </div>
-</div>
+<div id="globe"></div>
+
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script src="https://unpkg.com/globe.gl"></script>
+
+<script>
+  const world = Globe()
+    (document.getElementById('globe'))
+    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
+    .backgroundColor('rgba(0,0,0,0)')
+    .pointsData([]);
+
+  // Responsive resize
+  window.addEventListener('resize', () => {
+    world.width(window.innerWidth);
+    world.height(window.innerHeight);
+  });
+
+  world.width(window.innerWidth);
+  world.height(window.innerHeight);
+</script>
 
 </body>
 </html>
