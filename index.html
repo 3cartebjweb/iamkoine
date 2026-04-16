@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Live Visitors • iamkoine</title>
+    <title>Live Visitors Globe • iamkoine</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         html, body {
@@ -12,10 +12,9 @@
             overflow: hidden;
             background: #0b0f1a;
         }
-        #clstr_globe {
+        #globe {
             width: 100%;
             height: 100%;
-            display: block;
         }
         #title {
             position: absolute;
@@ -26,16 +25,90 @@
             font-size: 18px;
             z-index: 10;
             pointer-events: none;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #777;
+            font-family: system-ui, Arial, sans-serif;
+            font-size: 16px;
+            z-index: 10;
         }
     </style>
 </head>
 <body>
 
-<div id="title">Live Visitors • iamkoine</div>
+<div id="title">🌍 Live Visitors Globe • iamkoine</div>
+<div id="loading">Loading spinning globe...</div>
+<div id="globe"></div>
 
-<!-- Your original ClustrMaps script - exactly as requested -->
-<script type="text/javascript" id="clstr_globe" src="//clustrmaps.com/globe.js?d=X_B5WWqjV6VzVp1Vr7M6v8GWxWmSrAoP8KTaMdRXXkk"></script>
+<script type="module">
+    import Globe from 'https://cdn.jsdelivr.net/npm/globe.gl@2.45.3';
+
+    const globeEl = document.getElementById('globe');
+    const loadingEl = document.getElementById('loading');
+
+    // Create the 3D spinning globe
+    const world = Globe()(globeEl)
+        .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')  // classic Earth texture
+        .backgroundColor('#0b0f1a')
+        .atmosphereColor('#4a90e2')
+        .atmosphereAltitude(0.2)
+        .pointAltitude(0.01)        // how high the user dots float
+        .pointRadius(0.5)           // size of user dots
+        .pointColor(() => '#ff3366'); // bright visitor color
+
+    // Make it spin continuously (just like a real global map)
+    world.controls().autoRotate = true;
+    world.controls().autoRotateSpeed = 0.35;   // nice gentle spin speed
+
+    // Make it responsive on every screen size (perfect for Google Sites iframe)
+    function resize() {
+        world.width(window.innerWidth);
+        world.height(window.innerHeight);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Hide loading message once ready
+    setTimeout(() => {
+        loadingEl.style.display = 'none';
+    }, 1200);
+
+    // === Simulate users from all over the world ===
+    let visitors = [];
+
+    function addRandomUser() {
+        // Realistic distribution (mostly land areas, avoids empty oceans/poles)
+        const lat = (Math.random() * 140) - 70;     // -70 to +70 latitude
+        const lng = Math.random() * 360 - 180;      // full longitude
+
+        visitors.push({
+            lat: lat,
+            lng: lng
+        });
+
+        // Keep only the last 120 users so the globe doesn't get too crowded
+        if (visitors.length > 120) visitors.shift();
+
+        world.pointsData(visitors);
+    }
+
+    // Seed the globe with some initial users from around the world
+    for (let i = 0; i < 35; i++) {
+        addRandomUser();
+    }
+
+    // Add new "live" users every 1.5–2.5 seconds (feels like real traffic)
+    setInterval(() => {
+        if (Math.random() > 0.25) {   // ~75% chance each interval
+            addRandomUser();
+        }
+    }, 1800);
+</script>
 
 </body>
 </html>
