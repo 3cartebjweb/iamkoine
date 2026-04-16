@@ -51,21 +51,20 @@
     const globeEl = document.getElementById('globe');
     const loadingEl = document.getElementById('loading');
 
-    // Create the 3D spinning globe
     const world = Globe()(globeEl)
-        .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')  // classic Earth texture
+        .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
         .backgroundColor('#0b0f1a')
         .atmosphereColor('#4a90e2')
         .atmosphereAltitude(0.2)
-        .pointAltitude(0.01)        // how high the user dots float
-        .pointRadius(0.5)           // size of user dots
-        .pointColor(() => '#ff3366'); // bright visitor color
+        .pointAltitude(0.01)
+        .pointRadius(0.5)
+        .pointColor(() => '#ff3366');
 
-    // Make it spin continuously (just like a real global map)
+    // Spinning globe (continuous gentle rotation)
     world.controls().autoRotate = true;
-    world.controls().autoRotateSpeed = 0.35;   // nice gentle spin speed
+    world.controls().autoRotateSpeed = 0.35;
 
-    // Make it responsive on every screen size (perfect for Google Sites iframe)
+    // Responsive for all screen sizes + Google Sites iframe
     function resize() {
         world.width(window.innerWidth);
         world.height(window.innerHeight);
@@ -73,40 +72,30 @@
     window.addEventListener('resize', resize);
     resize();
 
-    // Hide loading message once ready
+    // Hide loading text
     setTimeout(() => {
         loadingEl.style.display = 'none';
-    }, 1200);
+    }, 1500);
 
-    // === Simulate users from all over the world ===
+    // Show users from all over the world (glowing dots)
     let visitors = [];
 
-    function addRandomUser() {
-        // Realistic distribution (mostly land areas, avoids empty oceans/poles)
-        const lat = (Math.random() * 140) - 70;     // -70 to +70 latitude
-        const lng = Math.random() * 360 - 180;      // full longitude
-
-        visitors.push({
-            lat: lat,
-            lng: lng
-        });
-
-        // Keep only the last 120 users so the globe doesn't get too crowded
+    function addRandomVisitor() {
+        const lat = (Math.random() * 150) - 75;
+        const lng = Math.random() * 360 - 180;
+        visitors.push({ lat, lng });
         if (visitors.length > 120) visitors.shift();
-
         world.pointsData(visitors);
     }
 
-    // Seed the globe with some initial users from around the world
+    // Initial visitors
     for (let i = 0; i < 35; i++) {
-        addRandomUser();
+        addRandomVisitor();
     }
 
-    // Add new "live" users every 1.5–2.5 seconds (feels like real traffic)
+    // New visitors appear over time (live traffic feel)
     setInterval(() => {
-        if (Math.random() > 0.25) {   // ~75% chance each interval
-            addRandomUser();
-        }
+        if (Math.random() > 0.25) addRandomVisitor();
     }, 1800);
 </script>
 
