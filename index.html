@@ -1,66 +1,54 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Globe Test</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    html, body {
-      margin: 0;
-      height: 100%;
-      background: #111;
-      overflow: hidden;
-    }
-    #globe {
-      width: 100%;
-      height: 100%;
-    }
-    #status {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      color: white;
-      font-family: Arial;
-      font-size: 14px;
-      z-index: 10;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Globe</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background: #0b0f1a;
+        }
+        #globe {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
 </head>
 <body>
 
-<div id="status">Loading...</div>
 <div id="globe"></div>
 
-<script>
-  window.addEventListener("error", (e) => {
-    document.getElementById("status").innerText =
-      "JS Error: " + e.message;
-  });
-</script>
+<script type="module">
+    import Globe from 'https://cdn.jsdelivr.net/npm/globe.gl';
 
-<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
-<script src="https://unpkg.com/globe.gl"></script>
-
-<script>
-  try {
     const el = document.getElementById('globe');
 
+    // Create the globe
     const world = Globe()(el)
-      .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-      .backgroundColor('#111');
+        .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+        .backgroundColor('#0b0f1a')
+        .atmosphereColor('#ffffff')
+        .atmosphereAltitude(0.15);
 
+    // Optional: make it slowly rotate
+    world.controls().autoRotate = true;
+    world.controls().autoRotateSpeed = 0.3;
+
+    // Handle window resize
     function resize() {
-      world.width(window.innerWidth);
-      world.height(window.innerHeight);
-      document.getElementById("status").innerText = "Globe loaded";
+        world.width(window.innerWidth);
+        world.height(window.innerHeight);
     }
 
     window.addEventListener('resize', resize);
     resize();
 
-  } catch (err) {
-    document.getElementById("status").innerText =
-      "Init error: " + err.message;
-  }
+    // Optional: add some points or arcs later if you want
+    // world.pointsData([...]);
 </script>
 
 </body>
