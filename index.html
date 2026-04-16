@@ -1,59 +1,66 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Globe</title>
+  <title>Globe Test</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <style>
     html, body {
       margin: 0;
-      padding: 0;
-      width: 100%;
       height: 100%;
+      background: #111;
       overflow: hidden;
-      background: #0b0f1a;
     }
-
     #globe {
       width: 100%;
       height: 100%;
     }
-
-    canvas {
-      display: block;
+    #status {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: white;
+      font-family: Arial;
+      font-size: 14px;
+      z-index: 10;
     }
   </style>
 </head>
-
 <body>
 
+<div id="status">Loading...</div>
 <div id="globe"></div>
+
+<script>
+  window.addEventListener("error", (e) => {
+    document.getElementById("status").innerText =
+      "JS Error: " + e.message;
+  });
+</script>
 
 <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
 <script src="https://unpkg.com/globe.gl"></script>
 
 <script>
-  const container = document.getElementById('globe');
+  try {
+    const el = document.getElementById('globe');
 
-  function init() {
-    const world = Globe()(container)
+    const world = Globe()(el)
       .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-      .backgroundColor('#0b0f1a');
+      .backgroundColor('#111');
 
     function resize() {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-
-      world.width(w);
-      world.height(h);
+      world.width(window.innerWidth);
+      world.height(window.innerHeight);
+      document.getElementById("status").innerText = "Globe loaded";
     }
 
-    resize();
     window.addEventListener('resize', resize);
-  }
+    resize();
 
-  // CRITICAL FIX: delay init until layout is fully stable
-  setTimeout(init, 150);
+  } catch (err) {
+    document.getElementById("status").innerText =
+      "Init error: " + err.message;
+  }
 </script>
 
 </body>
